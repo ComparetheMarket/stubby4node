@@ -6,6 +6,20 @@ var path = require('path');
 var isutf8 = require('isutf8');
 var Endpoint = require('./endpoint');
 var clone = require('../lib/clone');
+var out = require('../console/out');
+
+const cache = require('cache-memory')
+  .storeUndefinedObjects(false)
+  .create({
+    id: 'files',
+    clone: false,
+    ttl: 0,
+    added: () => out.warn('>>> cache item added'),
+    removed: () => out.warn('>>> cache item removed'),
+    hit: () => out.warn('>>> cache hit'),
+    miss: () => out.warn('>>> cache miss')
+  });
+
 var NOT_FOUND = "Endpoint with the given id doesn't exist.";
 var NO_MATCH = "Endpoint with given request doesn't exist.";
 
@@ -117,7 +131,14 @@ Endpoints.prototype.found = function (endpoint, captures, callback) {
   if (response.file != null) {
     filename = applyCaptures(response.file, captures);
     try {
-      response.body = fs.readFileSync(path.resolve(this.datadir, filename));
+      const fullPath = path.resolve(this.datadir, filename);
+      let fileData = cache.get(fullPath);
+      if (!fileData) {
+        fileData = fs.readFileSync(fullPath);
+        cache.set(fullPath, fileData);
+      }
+
+      response.body = fileData;
     } catch (e) { /* ignored */ }
   }
 

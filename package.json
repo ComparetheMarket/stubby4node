@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "buffer-equal": "^1.0.0",
+    "cache-memory": "2.1.2",
     "mocha": "^6.2.0",
     "semistandard": "^14.0.1",
     "sinon": "^7.4.2"
