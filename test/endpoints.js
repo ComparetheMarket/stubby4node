@@ -4,6 +4,7 @@ var sut;
 var Endpoints = require('../src/models/endpoints').Endpoints;
 var assert = require('assert');
 var bufferEqual = require('buffer-equal');
+var fs = require('fs');
 
 describe('Endpoints', function () {
   beforeEach(function () {
@@ -554,6 +555,42 @@ describe('Endpoints', function () {
           sut.find(data, callback);
 
           assert.strictEqual(callback.args[0][1].body.toString().trim(), expected);
+        });
+      });
+
+      describe('caching', function () {
+        const endpointsFilePath = 'test/data/endpoints.file.temp';
+
+        afterEach(function () {
+          if (fs.existsSync(endpointsFilePath)) {
+            fs.unlinkSync(endpointsFilePath);
+          }
+        });
+
+        it('should cache response read from file', function () {
+          const expected = 'file contents to be cached!';
+          fs.writeFileSync(endpointsFilePath, expected);
+
+          sut.create({
+            request: {
+              url: '/testing'
+            },
+            response: {
+              body: 'body contents!',
+              file: endpointsFilePath
+            }
+          });
+          data = {
+            url: '/testing',
+            method: 'GET'
+          };
+
+          sut.find(data, callback);
+          fs.unlinkSync(endpointsFilePath);
+          sut.find(data, callback);
+
+          assert.strictEqual(callback.args[0][1].body.toString().trim(), expected);
+          assert.strictEqual(callback.args[1][1].body.toString().trim(), expected);
         });
       });
 
