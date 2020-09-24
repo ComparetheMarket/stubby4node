@@ -13,11 +13,7 @@ const cache = require('cache-memory')
   .create({
     id: 'files',
     clone: false,
-    ttl: 0,
-    added: () => out.warn('>>> cache item added'),
-    removed: () => out.warn('>>> cache item removed'),
-    hit: () => out.warn('>>> cache hit'),
-    miss: () => out.warn('>>> cache miss')
+    ttl: 0
   });
 
 var NOT_FOUND = "Endpoint with the given id doesn't exist.";
